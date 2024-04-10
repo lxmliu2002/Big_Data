@@ -19,6 +19,6 @@ def compare_files(file1_path, file2_path):
 
 if __name__ == "__main__":
     file1_path = "./output/basic_1.txt"
-    file2_path = "./output/basic_2.txt"
+    file2_path = "./output/block.txt"
 
     compare_files(file1_path, file2_path)

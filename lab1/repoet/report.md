@@ -235,7 +235,96 @@ P = np.dot(np.linalg.inv(e - teleport_parameter * S), ((1 - teleport_parameter) 
 
 
 
+#### **多线程尝试**
 
+为了进一步优化程序的运行时间，注意到分块之后的矩阵$M$含有大量密集计算任务，因此想进行程序多线程运行方向的尝试，从而当程序需要进行I/O操作（主要是文件读写），多线程运行可以使得程序在等待I/O操作完成时能够继续执行其他任务，提高了程序的效率。
+
+- Python 支持多线程编程，只需要导入自带的threading模块
+
+```python
+import threading
+```
+
+由于在python的threading库中，thread对象并不存在返回值，所以小组自己设计了一个MyThread类，通过get_result成员函数获取函数的返回值，从而使用threading进行函数的运行。
+
+```python
+class MyThread(threading.Thread):
+    def __init__(self, func, args=()):
+        super(MyThread, self).__init__()
+        self.func = func
+        self.args = args
+    def run(self):
+        time.sleep(2)
+        self.result = self.func(*self.args)
+    def get_result(self):
+        threading.Thread.join(self)  # 等待线程执行完毕
+        try:
+            return self.result
+        except Exception:
+            return None
+```
+
+核心算法如下：
+
+```python
+ while e > tol:
+        print(e)
+        mythreads = []
+        for block_start in range(0, N, block_size):
+            block_end = min(block_start + block_size, N)
+            mythreads.append(
+                MyThread(iter_once,(G,P_n,block_start,block_end,teleport_parameter,N))
+            )
+        for mythread in mythreads:
+            mythread.start()
+        P_n1 = np.concatenate([mythread.get_result() for mythread in mythreads])
+        e = P_n1 - P_n
+        e = max(map(abs, e))
+        P_n = P_n1
+```
+
+通过构建mythreads列表，将每一步迭代需要执行的函数名```iter once```和参数```G,P_n,block_start,block_end,teleport_parameter```构建出新的MyThread对象，然后在mythreads列表中将所有的mythread对象进行多线程运行，通过```get_result```获取返回值，使用```np.concatenate()```函数将其拼为新的P_n1，进行新一轮迭代。
+
+然而，Python含有一个全局解释器锁(GIL)。
+
+由于Python 代码的执行是由 Python 虚拟机（又叫解释器主循环）进行控制的，因此其设计思路是在主循环中同时只能有一个控制线程在执行，就像单核 CPU 系统中的多进程一样，只是在宏观上看起来多进程，在微观上其实仍是单个单个的运行。同理，尽管 Python 解释器中可以有多个线程在运行，但是微观时间上，只有一个线程在被真正执行。GIL便是控制Python虚拟机访问的部件，保证同时只能有一个线程在进行。
+
+因此，对于I/O密集型的任务，使用```threading```模块可以有效缩短程序运行时间，然而对于CPU密集型的任务(需要大量的CPU计算资源)，使用多线程运行，不仅不会优化程序，反而会加长代码的执行时间。值得指出的是，在本题的每次循环中，进行了大量的数值运算，比起I/O操作，CPU的使用率远远更高，因此，使用多线程是一次错误的尝试。
+
+#### **多进程尝试**
+
+在多线程的尝试失败后，通过学习发现了多进程的程序执行方式。即每个进程都有自己独立的内存空间和Python解释器，它们之间不共享内存，从而并不会产生多线程下多个线程在同一时刻竞争GIL的情况，因此更加适用于CPU密集型任务。
+
+进程池是资源进程, 管理进程组成的技术的应用，通过使用进程池，可以更加高效地完成多进程程序的执行。
+
+使用多进程程序，需要导入```multiprocess```库，同时，使用进程池，导入```concurrent.futures```库：
+
+```python
+from concurrent.futures import ProcessPoolExecutor,as_completed
+from multiprocessing import Process
+```
+
+核心算法更改如下：
+
+```python
+ while e > tol:
+        print(e)
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            for block_start in range(0, N, block_size):
+                block_end = min(block_start + block_size, N)
+                futures.append(executor.submit(iter_once, G, P_n, block_start, block_end, teleport_parameter, N))
+            P_n1 = np.concatenate([future.result() for future in futures])
+        e = P_n1 - P_n
+        e = max(map(abs, e))
+        P_n = P_n1
+```
+
+首先定义```concurrent.futures```中的```ProcessPoolExecutor```作为```executor```，然后创造空```futures```列表，将需要执行的函数```iter_once```和参数通过```executor.submit()```传入到futures列表中，随后直接使用future的```result()```函数，通过和前面一样的方式，得到最终多线程运算的结果。
+
+通过多进程的处理方式，将执行时间从37min+缩短到了129.5973s，实现了较大的优化。
+
+<img src="/Users/kkkai/Library/Application Support/typora-user-images/image-20240422202753565.png" alt="image-20240422202753565" style="zoom: 38%;" />
 
 ### 第三方库实现
 

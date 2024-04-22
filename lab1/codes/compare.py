@@ -16,9 +16,8 @@ def compare_files(file1_path, file2_path):
 
             output_file.write(f"{result1} {result2}\n")
 
-
 if __name__ == "__main__":
-    file1_path = "./output/basic_1.txt"
-    file2_path = "./output/block.txt"
+    file1_path = input("Enter path for the first file: ")
+    file2_path = input("Enter path for the second file: ")
 
     compare_files(file1_path, file2_path)

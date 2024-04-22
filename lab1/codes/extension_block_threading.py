@@ -90,7 +90,7 @@ def calculate_pagerank_and_sort(G, nodes, N, teleport_parameter, block_size):
             )
         for mythread in mythreads:
             mythread.start()
-            P_n1 = mythread.get_result()
+        P_n1 = np.concatenate([mythread.get_result() for mythread in mythreads])
         e = P_n1 - P_n
         e = max(map(abs, e))
         P_n = P_n1

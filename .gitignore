@@ -10,3 +10,5 @@ lab1/codes/dist/output
 *build
 *.spec
 *dist
+*.venv
+*model

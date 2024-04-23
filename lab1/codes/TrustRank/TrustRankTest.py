@@ -56,10 +56,6 @@ def calculate_trustrank_and_sort(G, nodes, N, teleport_parameter, seed_vector):
         for to_node in to_nodes:
             S[index[to_node], index[from_node]] = 1
 
-    # 借助种子向量设置迭代矩阵S
-    for node in seed_vector:
-        S[:, index[node]] = 1 / len(seed_vector)
-
     # 对转移矩阵S进行归一化处理
     for j in range(N):
         sum_of_col = sum(S[:, j])
@@ -94,7 +90,6 @@ def calculate_trustrank_and_sort(G, nodes, N, teleport_parameter, seed_vector):
 
     # 提取前100个排序结果
     sorted_results = []
-    print(len(sorted_nodes))
     for node, index in sorted_nodes[:len(sorted_nodes)]:
         sorted_results.append((node, T_n[index]))
     end = time.perf_counter()
@@ -116,7 +111,7 @@ def TR():
     """
     goodWebSearch.Search()
     data_file_path = '../Data.txt'
-    seed_vector_file_path = 'test.txt'
+    seed_vector_file_path = 'good.txt'
     output_file_path = './compare/trustrank.txt'
 
     teleport_parameter = 0.85
@@ -128,3 +123,4 @@ def TR():
     output_result(sorted_results, output_file_path)
 
 
+TR()

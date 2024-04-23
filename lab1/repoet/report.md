@@ -122,9 +122,41 @@ $$
 
 #### TruskRank
 
+##### （一）设计目标
 
+TrustRank是近年来比较受关注的基于链接关系的排名算法，其可以翻译为“信任指数”。
 
+TrustRank算法是设计来应对利用垃圾网站轻易操纵Google排名、提升搜索结果质量的作弊手段。实施这一方法极大地增加了短时间操作排名的难度，迅速改善了搜索结果的质量。所有要以TrustRank值作为网页排名的重要依据，页面的TrustRank用来评价其是否具有真正权威性。
 
+##### （二）设计原理
+
+Trustrank的实现原理基于以下假设：
+
+1. **链接信任传递：** Trustrank认为，高质量网页通常会链接到其他高质量网页。因此，当一个网页被其他高质量网页链接时，它也会因此获得一定的信任值。
+2. **反垃圾链接：** Trustrank也考虑到垃圾网页链接的影响。如果一个网页主动链接到大量的垃圾网页或被垃圾网页链接，则其信任值会相应下降。
+
+基于以上原理，Trustrank算法可以概括为以下几个步骤：
+
+1. **初始化：** 人工选取具有百分百信任度的网页作为**种子向量**。
+2. **链接分析：** 算法分析所有网页之间的链接关系。它检查每个网页的出链和入链，并考虑这些链接的来源和目标网页的信任值。
+3. **信任传递：** 通过链接关系，信任值从高质量网页传递到链接的网页。如果一个网页被高信任值网页链接，则其信任值会相应提高。
+4. **反垃圾链接处理：** 算法考虑到反垃圾链接的影响，即网页链接到垃圾网页的情况。这种情况会导致网页的信任值下降。
+5. **迭代计算：** 以上过程迭代进行，直到收敛或达到预定的迭代次数。
+6. **排名计算：** 最终，根据网页的信任值进行排名。信任值高的网页会在搜索结果中获得更高的排名。
+
+因此，相较于Pagerank，Trustrank的更新方式如下：
+
+![image-20240423114207755](report.pic/image-20240423114207755.png)
+
+其中d为种子向量，r为每次的可信度向量，初始值为种子向量。
+
+##### （三）结果评价
+
+​	在我们的实验中，如何实现TrustRank的性能指标评价呢？我们结合推荐系统中常见的评价指标，设计了如下的指标IoR：
+
+![image-20240423112745410](report.pic/image-20240423112745410.png)
+
+​	该指标中，集合U为垃圾网站集合，即所有垃圾网站在Trustrank排序下和Pagerank排序下排名的平均变化值，基于此，我们可以较好地看出Trustrank能否完成对垃圾网站的可信度抑制。
 
 
 
@@ -395,9 +427,162 @@ def iter_once(G, P_n, N, teleport_parameter):
 
 #### TruskRank
 
+> ./codes/TrustRank/goodWebSearch.py
+>
+> ./codes/TrustRank/TrustRankTest.py
+>
+> ./codes/TrustRank/checkResult.py
+>
+> 基础实现中已将数据处理函数进行解释，此处仅对核心代码进行说明
 
+在尝试对TrustRank进行实现的过程，我们首先需要明确的是，如何模拟一个专家，去人工选择起初的种子向量呢？
 
+回顾TrustRank的最基本假设：**好的网站很少会链接到坏的网站。**
 
+基于此原理，我们在有限的数据集下，无法判定可信的网站。但是若**假设**某些网站为可信网站，我们可以通过对这些网站周边进行搜索，未被可信网站链接到、且入度较低的网站，具有很大可能为垃圾网站。
+
+因此，我们可以借助这个特性来验证Trustrank算法的性能，实验中，我们采取如下的数据处理步骤：
+
+1. **随机选取可信网站：**随机选取100个入度较大的网站节点，假定他们为可信网站，并输出到good.txt中。
+2. **计算垃圾网站：**在可信网站周边进行搜索，选取未被可信网站链接到、且入度较低的网站作为垃圾网站，并输出到bad.txt中。
+3. **计算排名结果：**使用可信网站生成种子向量，利用Trustrank算法进行迭代，输出在Trustrank影响下的排名。
+4. **指标评价：**将Trustrank影响下的排名与Pagerank下的排名进行对比，输出计算出的IoR指标，观察Trustrank效果。
+
+接下来，我们分如上四个方面来介绍Trustrank的代码实现：
+
+##### （1）随机选取可信网站：
+
+​	我们对read_graph函数进行修改，使其还记录了每个节点的出入度信息：
+
+```python
+def read_graph(file_path):
+    # 读取图数据并构建图结构
+    G = {}
+    nodes = []
+    in_degrees = {}
+    with open(file_path, 'r') as f:
+        for line in f:
+            ……
+            if to_node not in in_degrees:
+                in_degrees[to_node] = 0
+            in_degrees[to_node] += 1
+    return G, nodes, in_degrees
+```
+
+​	基于此，我们可以通过筛选入度为前5%的所有节点，并随机选择100个将其输出
+
+```python
+    # 找到入度最高的前5%的节点
+    sorted_nodes = sorted(in_degrees.items(), key=lambda x: x[1], reverse=True)
+    top_5_percent = int(len(sorted_nodes) * 0.05)
+    top_nodes = [node for node, _ in sorted_nodes[:top_5_percent]]
+
+    # 随机选择100个节点
+    random.shuffle(top_nodes)
+    selected_nodes = top_nodes[:100]
+
+    # 将选定的节点存储在数组中
+    selected_nodes_array = []
+    for node in selected_nodes:
+        selected_nodes_array.append(node)
+
+    # 将选定的节点输出到test.txt文件
+    output_result(selected_nodes_array, output_file_path, in_degrees)
+```
+
+##### （2）计算垃圾网站：
+
+​	随后，我们在图中进行检索，寻找与可信网站节点不相邻且入度较小的节点，作为考察的垃圾网站，这里仍然随机选取了一部分
+
+```python
+def find_low_in_degree_nodes(G, nodes, in_degrees, target_nodes, num_nodes):
+    # 找到与目标节点不相邻且入度较小的节点
+    low_in_degree_nodes = []
+    for node in nodes:
+        if node not in target_nodes:
+            is_adjacent = False
+            for target_node in target_nodes:
+                if target_node in G and node in G[target_node]:
+                    is_adjacent = True
+                    break
+            if not is_adjacent and in_degrees.get(node, 0) < 9:
+                low_in_degree_nodes.append(node)
+    random.shuffle(low_in_degree_nodes)
+    selected_nodes = low_in_degree_nodes[:num_nodes]
+    return selected_nodes
+```
+
+##### （3）Trustrank处理：
+
+​	Trustrank和Pagerank唯一的区别，在于其迭代过程依赖于种子向量（随机跳转只会转移到可信网站上），且其初始值为种子向量。因此需要修改整个的迭代过程如下：
+
+​	基于如下处理，我们就完成了Trustrank下的转移更新步骤，可以看到与Trustrank的更新公式是一致的。
+
+```python
+    # 初始化TrustRank向量T_n(种子向量)
+    T_n = np.zeros(N, dtype=np.float64)
+    for node in seed_vector:
+        T_n[index[node]] = 1 / len(seed_vector)
+
+    D = T_n
+
+    # 构建TrustRank迭代矩阵A
+    A = teleport_parameter * S
+
+    # 设置迭代停止条件
+    e = 100
+    tol = 1 / (N * N)
+
+    # 迭代计算TrustRank
+    while e > tol:
+        T_n1 = np.dot(A, T_n)  + (1 - teleport_parameter) * D
+        e = T_n1 - T_n
+        e = max(map(abs, e))
+        T_n = T_n1
+```
+
+##### （4）指标评价：
+
+​	将Trustrank输出的排名与Pagerank输出的排名进行对比，并结合之前确定的垃圾网站，计算排名变化指标IoR：
+
+​	这里，由于实验选取的节点具有随机性，我们进行多次如上三个步骤，每次都进行评分，取平均值作为Trustrank的性能指标。
+
+```python
+iters = 10
+
+for i in range(iters):
+    TrustRankTest.TR()
+
+    # 从bad.txt文件中读取节点
+    with open('bad.txt', 'r') as file:
+        nodes = file.read().splitlines()
+
+    # 计算每个节点的排名变化
+    ranking_changes = []
+    for node in nodes:
+        with open('./compare/networkx.txt', 'r') as networkx_file, open('./compare/trustrank.txt', 'r') as trustrank_file:
+            networkx_ranking = [line.split()[0] for line in networkx_file]
+            trustrank_ranking = [line.split()[0] for line in trustrank_file]
+
+        networkx_index = networkx_ranking.index(node)
+        trustrank_index = trustrank_ranking.index(node)
+
+        ranking_change = trustrank_index - networkx_index
+        ranking_changes.append(ranking_change)
+
+    # 计算平均排名变化
+    average_change = sum(ranking_changes) / len(ranking_changes)
+
+    # 打印平均排名变化
+    print("Average ranking change:", average_change)
+
+    # 将排名变化写入result.txt文件
+    with open('result.txt', 'w') as result_file:
+        for change in ranking_changes:
+            result_file.write(str(change) + '\n')
+```
+
+​	直接执行checkResult.py文件，即可进行多次TrustRank的评估：
 
 
 
@@ -518,7 +703,19 @@ if __name__ == "__main__":
 
 #### TrustRank
 
+运行评价代码，得到垃圾网站的排名变化如下所示：
 
+![image-20240423121426163](report.pic/image-20240423121426163.png)
+
+可以看到，垃圾网站的经过Trustrank处理后，基本上都下降了许多，我们结合IoR指标结果进行查看（省略到整数）：
+
+| iters | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   |
+| ----- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| IoR   | -39  | -40  | -43  | -53  | -59  | -39  | -45  | -26  | -35  | -44  |
+
+![image-20240423122524889](report.pic/image-20240423122524889.png)
+
+即，Trustrank执行后，垃圾网站排名变化指标(IoR)平均为-42.464，且均为负数，表明在Trustrank作用下，垃圾网站几乎均处于下降趋势，平均每一个垃圾网站都下降了42名，**即说明Trustrank算法对垃圾网站有较好的抑制作用**。
 
 
 
@@ -526,18 +723,28 @@ if __name__ == "__main__":
 
 在 `Apple M2 Pro 16G` 环境下运行各个代码文件，得到如下的运行性能数据。
 
-
-
 |     **Type**     | Networkx | Basic_1   | Basic_2 | ThreadPool | Threading | Multiprocess | Sparse  | TrustRank |
 | :--------------: | :------: | --------- | ------- | ---------- | --------- | ------------ | ------- | --------- |
-| **Storage** (MB) | 111.1875 | 1079.2031 | 36.4219 | 41.3125    | 22.0000   | 67.5000      | 47.2969 |           |
-|   **Time** (s)   |  2.7869  | 4.2044    | 12.5273 | 1516.9718  | 2031.6597 | 140.6871     | 11.9909 |           |
+| **Storage** (MB) | 111.1875 | 1079.2031 | 36.4219 | 41.3125    | 22.0000   | 67.5000      | 47.2969 | 1099.4180 |
+|   **Time** (s)   |  2.7869  | 4.2044    | 12.5273 | 1516.9718  | 2031.6597 | 140.6871     | 11.9909 | 5.3397    |
+
+可以看出如下重要信息：
+
+- Pagerank基本方法具有较高的空间复杂度，在使用稀疏矩阵优化后从1080MB的空间占用变为了47.3MB的空间占用，表明**稀疏矩阵有较好的空间优化作用。**
+- 使用矩阵分块计算虽然能进一步降低空间复杂度，但是会造成时间复杂度的巨额增长，借助多线程并行**优化了这一点不足，其中Multiprocess下优化效果最佳。**
 
 
 
 ## 实验总结与感悟
 
-本次实验中，小组编程实现了 PageRank 算法，并对其进行了**<u>乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉乌拉</u>**等多个方面的优化。经过与第三方库得到的结果进行对比，可以看到小组实现的效果较好，PageRank 算法的实现度较高。
+本次实验中，小组编程实现了 PageRank 算法，并对其进行了如下多个方面的优化：
+
+- **完整充分实现了稀疏矩阵存储优化**，成功大大减小了程序空间复杂度。
+- **完整充分实现了矩阵分块更新算法**，进一步减小空间复杂度，并采用ThreadPoolExecutor、threading、multiprocess多种多线程并行计算方式进行了时间复杂度的提升与优化。
+- **额外实现了迭代法的Pagerank算法**，这种方法具有较小的空间复杂度，是另一种Pagerank的实现思路。
+- **额外实现了TrustRank算法**，探索了Trustrank对垃圾网站的抑制作用，并提出一种基于排名的评价指标，在数据集上取得了较好的表现。
+
+经过与第三方库得到的结果进行对比，以及相关评价指标的设计评估，可以看到小组实现的效果较好，PageRank 算法的实现度较高。
 
 最后，感谢杨老师的耐心讲授，小组成员均有了较大收获。
 
@@ -550,7 +757,13 @@ if __name__ == "__main__":
 
 [https://zhuanlan.zhihu.com/p/189848778](https://zhuanlan.zhihu.com/p/189848778)
 
+[TrustRank算法 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/39185980)
 
+[PageRank的变体算法：TrustRank、ItemRank和TextRank（三） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/160961216)
+
+[Hadoop-MapReduce下的PageRank 矩阵分块算法_pagerank 分块计算-CSDN博客](https://blog.csdn.net/zhanglc_5168/article/details/21950353)
+
+[基于六度分隔理论、PageRank等的人工风控特征提取框架-SocialWatch - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/504519559)
 
 
 ## 说明

@@ -29,7 +29,7 @@ def output_result(results, file_path, in_degrees):
 
 
 def find_low_in_degree_nodes(G, nodes, in_degrees, target_nodes, num_nodes):
-    # 找到与目标节点不直接相邻且入度较小的节点
+    # 找到与目标节点不相邻且入度较小的节点
     low_in_degree_nodes = []
     for node in nodes:
         if node not in target_nodes:
@@ -45,20 +45,19 @@ def find_low_in_degree_nodes(G, nodes, in_degrees, target_nodes, num_nodes):
     return selected_nodes
 
 
-
 def Search():
     data_file_path = '../Data.txt'
-    output_file_path = 'test.txt'
-    output_file_path2 = 'test2.txt'
+    output_file_path = 'good.txt'
+    output_file_path2 = 'bad.txt'
 
     G, nodes, in_degrees = read_graph(data_file_path)
 
-    # 找到入度最高的前10%的节点
+    # 找到入度最高的前5%的节点
     sorted_nodes = sorted(in_degrees.items(), key=lambda x: x[1], reverse=True)
-    top_10_percent = int(len(sorted_nodes) * 0.1)
-    top_nodes = [node for node, _ in sorted_nodes[:top_10_percent]]
+    top_5_percent = int(len(sorted_nodes) * 0.05)
+    top_nodes = [node for node, _ in sorted_nodes[:top_5_percent]]
 
-    # 随机选择前一半的节点
+    # 随机选择100个节点
     random.shuffle(top_nodes)
     selected_nodes = top_nodes[:100]
 
@@ -73,3 +72,6 @@ def Search():
     # 找到与目标节点不直接相邻且入度较小的节点，并输出到test2.txt文件
     selected_nodes2 = find_low_in_degree_nodes(G, nodes, in_degrees, selected_nodes, 100)
     output_result(selected_nodes2, output_file_path2, in_degrees)
+
+
+Search()

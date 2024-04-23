@@ -2,18 +2,20 @@ import networkx as nx
 
 import TrustRankTest
 
-for i in range(10):
+iters = 10
+
+for i in range(iters):
 
     TrustRankTest.TR()
 
-    # 从test2.txt文件中读取节点
-    with open('test2.txt', 'r') as file:
+    # 从bad.txt文件中读取节点
+    with open('bad.txt', 'r') as file:
         nodes = file.read().splitlines()
 
     # 计算每个节点的排名变化
     ranking_changes = []
     for node in nodes:
-        with open('./compare/networkx.txt', 'r') as networkx_file, open('./output/trustrank.txt', 'r') as trustrank_file:
+        with open('./compare/networkx.txt', 'r') as networkx_file, open('./compare/trustrank.txt', 'r') as trustrank_file:
             networkx_ranking = [line.split()[0] for line in networkx_file]
             trustrank_ranking = [line.split()[0] for line in trustrank_file]
 

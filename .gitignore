@@ -8,3 +8,4 @@ public/
 _multiconfig.yml
 *build
 *.spec
+lab1/codes/dist/output

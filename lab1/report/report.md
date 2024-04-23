@@ -754,6 +754,8 @@ if __name__ == "__main__":
 
 本次实验代码均位于 `./codes` 文件夹中，其中可执行文件 exe 均位于 `./codes/dist` 文件夹中，建议使用 `PowerShell` 运行，运行完成后会输出运行的内存使用情况和时间开销，并在 `./codes/dist/output` 中输出结果文件。
 
+其中，`Trustrank.exe`等效于执行`checkResult.py`文件，会进行十次的Trustrank测试，并输出每次得到的IoR指标值，将测试结果存储在 `./codes/dist/compare`夹文件夹下。
+
 经测试，所有的 exe 文件均可正常运行。但需要注意的是，由于 `./codes/dist/extension_block_multiprocess.exe` 是多进程运行（打包时限定进程数为 10），其对于运行环境的要求较高，容易爆内存导致运行失败，建议直接运行 `./codes/extension_block_multiprocess.py` 文件，此种方法不会出现运行失败的情况（好神奇）。
 
 

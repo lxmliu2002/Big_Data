@@ -7,3 +7,6 @@ public/
 .deploy*/
 _multiconfig.yml
 lab1/codes/dist/output
+*build
+*.spec
+*dist

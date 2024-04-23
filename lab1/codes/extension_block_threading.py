@@ -81,7 +81,7 @@ def calculate_pagerank_and_sort(G, nodes, N, teleport_parameter, block_size):
 
     # 迭代计算PageRank
     while e > tol:
-        print(e)
+        # print(e)
         mythreads = []
         for block_start in range(0, N, block_size):
             block_end = min(block_start + block_size, N)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     分块更新迭代法求解PageRank并输出结果
     """
     data_file_path = 'Data.txt'
-    output_file_path = 'output/block.txt'
+    output_file_path = 'output/block_threading.txt'
 
     teleport_parameter = 0.85
     block_size = 100

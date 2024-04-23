@@ -54,8 +54,6 @@ def calculate_pagerank_and_sort(G, nodes, N, teleport_parameter):
     for i, node in enumerate(sorted(nodes)):
         index[node] = i
 
-    print()
-
     # 将图中key和value转为对应的索引
     G = {index[k]:[index[v] for v in vs] for k,vs in G.items()}
 
@@ -71,7 +69,7 @@ def calculate_pagerank_and_sort(G, nodes, N, teleport_parameter):
 
     # 迭代计算PageRank
     while e > tol:
-        print(e)
+        # print(e)
         P_n1 = iter_once(G, P_n,N, teleport_parameter)
         e = P_n1 - P_n
         e = max(map(abs, e))

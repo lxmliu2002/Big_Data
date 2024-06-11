@@ -115,7 +115,8 @@ print("starting...")
 # 主流程
 train_data = read_train_data('../data/train.txt')
 item_data = read_item_data('../data/itemAttribute.txt')
-test_data = read_test_data('../data/test_light.txt')
+test_data = read_test_data('../data/test.txt')
+# test_data = read_test_data('../data/test_light.txt')
 
 rating_matrix, user_map, item_map = build_rating_matrix(train_data)
 
@@ -123,5 +124,6 @@ rating_matrix, user_map, item_map = build_rating_matrix(train_data)
 predict_matrix = predict_ratings(test_data, train_data, rating_matrix, user_map, item_map)
 
 write_predictions(predict_matrix, './result/result_itemCF.txt')
+# write_predictions(predict_matrix, './result/result_itemCF_light.txt')
 
 print("finished!")

@@ -2,6 +2,7 @@ import pickle
 import random
 import numpy as np
 import SVD 
+import SVD_bias
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -60,14 +61,15 @@ num_epochs= 50
 lr=0.05
 weight_decay=1e-6
 
-train_data = SVD.prepare_data(user_map, item_map, train_data)
-test_data = SVD.prepare_data(user_map, item_map, test_data)
+# 更改SVD/SVD_bias来选择模型
+train_data = SVD_bias.prepare_data(user_map, item_map, train_data)
+test_data = SVD_bias.prepare_data(user_map, item_map, test_data)
 
 num_users = len(user_map)
 num_items = len(item_map)
 
-model = SVD.SVDModel(num_users, num_items, latent_dim)
+model = SVD_bias.SVDModel(num_users, num_items, latent_dim)
 
-SVD.train(model, train_data, test_data, num_epochs, lr, weight_decay)
+SVD_bias.train(model, train_data, test_data, num_epochs, lr, weight_decay)
 
 model.save_model()

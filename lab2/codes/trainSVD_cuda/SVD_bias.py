@@ -11,14 +11,21 @@ class SVDModel(nn.Module):
         super(SVDModel, self).__init__()
         self.user_factors = nn.Embedding(num_users, latent_dim)
         self.item_factors = nn.Embedding(num_items, latent_dim)
+        self.user_bias = nn.Embedding(num_users, 1)  # 用户偏置
+        self.item_bias = nn.Embedding(num_items, 1)  # 物品偏置
+        self.global_bias = nn.Parameter(torch.zeros(1))  # 全局偏置
         self.user_factors.weight.data.uniform_(0, 0.05)
         self.item_factors.weight.data.uniform_(0, 0.05)
+        self.user_bias.weight.data.uniform_(0, 0.05)  # 初始化用户偏置
+        self.item_bias.weight.data.uniform_(0, 0.05)  # 初始化物品偏置
 
     def forward(self, user_idx, item_idx):
         user_factors = self.user_factors(user_idx)
         item_factors = self.item_factors(item_idx)
+        user_bias = self.user_bias(user_idx).squeeze()
+        item_bias = self.item_bias(item_idx).squeeze()
         dot = (user_factors * item_factors).sum(1)
-        return dot
+        return dot + user_bias + item_bias + self.global_bias
 
     def save_model(self, epoch=0, save_dir='model/model_SVD.pt'):
         if epoch != 0:
@@ -32,7 +39,6 @@ def prepare_data(user_map, item_map, data):
     ratings = torch.tensor([r for _, _, r in data], dtype=torch.float32)
     return TensorDataset(users, items, ratings)
 
-
 def train(model, train_data, test_data, num_epochs=20, lr=0.01, weight_decay=1e-6, batch_size=512, device='cuda'):
     model.to(device)
     criterion = nn.MSELoss()
@@ -41,6 +47,11 @@ def train(model, train_data, test_data, num_epochs=20, lr=0.01, weight_decay=1e-
 
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=12, pin_memory=True)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=12, pin_memory=True)
+    
+    # 早停
+    best_auc = 0
+    early_stopping_counter = 0
+    early_stopping_patience = 4
 
     for epoch in range(num_epochs):
         model.train()
@@ -81,5 +92,15 @@ def train(model, train_data, test_data, num_epochs=20, lr=0.01, weight_decay=1e-
             auc = float('nan')
 
         print(f'\n======Epoch {epoch + 1}/{num_epochs}======\nMSE Loss: {test_loss} AUC: {auc} \n')
+
+        if auc > best_auc:
+            best_auc = auc
+            early_stopping_counter = 0
+            model.save_model(epoch+1)
+        else:
+            early_stopping_counter += 1
+            if early_stopping_counter >= early_stopping_patience:
+                print(f'Early stopping at epoch {epoch + 1}')
+                break
 
         model.save_model(epoch+1)

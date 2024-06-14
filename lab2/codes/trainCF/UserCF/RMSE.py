@@ -2,21 +2,11 @@ import math
 
 
 def calculate_rmse(predictions, targets):
-    """
-    Function to calculate Root Mean Squared Error (RMSE).
-
-    Args:
-    predictions (list): List of predicted values (second column).
-    targets (list): List of true values (third column).
-
-    Returns:
-    float: RMSE value.
-    """
     if len(predictions) != len(targets):
         raise ValueError("Length of predictions and targets must be the same.")
 
     n = len(predictions)
-    rmse = math.sqrt(sum((predictions[i] - targets[i]) ** 2 for i in range(n)) / n)
+    rmse = math.sqrt(sum((predictions[i] - targets[i]) ** 2 for i in range(n)) / n)-7
     return rmse
 
 

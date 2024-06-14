@@ -7,8 +7,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
 
-# 读取训练数据并按9:1比例分割
-def read_and_split_train_data(filepath, split_ratio=0.9):
+# 读取训练数据
+def read_and_split_train_data(filepath):
     train_data = defaultdict(list)
     with open(filepath, 'r') as f:
         for line in f:
@@ -22,13 +22,27 @@ def read_and_split_train_data(filepath, split_ratio=0.9):
     train_split = defaultdict(list)
     test_split = defaultdict(list)
 
-    for user, ratings in train_data.items():
-        split_point = int(len(ratings) * split_ratio)
-        random.shuffle(ratings)
-        train_split[user] = ratings[:split_point]
-        test_split[user] = ratings[split_point:]
+    users = list(train_data.keys())
+    random.shuffle(users)  # 打乱用户顺序
+
+    for i in range(0, len(users), 2):
+        # 选择每两个用户中的一个用户
+        selected_users = users[i:i + 2]
+        if len(selected_users) < 2:
+            selected_user = random.choice(selected_users)
+        else:
+            selected_user = random.choice(selected_users[:2])
+
+        for user in selected_users:
+            ratings = train_data[user]
+            if user == selected_user and len(ratings) > 1:
+                random.shuffle(ratings)
+                test_split[user].append(ratings.pop())  # 随机选择一条数据作为测试集
+            train_split[user] = ratings  # 其余数据作为训练集
 
     return train_data, train_split, test_split
+
+
 
 
 # 读取项目数据

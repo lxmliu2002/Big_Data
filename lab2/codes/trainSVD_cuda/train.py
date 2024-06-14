@@ -78,14 +78,15 @@ lr=0.05
 weight_decay=1e-6
 model_type = "SVDattr"
 data_divide_method = 1
-
+gamma=0.5 #衰减率
+batch_size=512
+device='cuda'  #可以改成cpu
 
 # 划分训练集和测试集
 if data_divide_method == 1:
     train_data, test_data = split_train_test(train_data, train_ratio=0.9)
 elif data_divide_method == 2:
     train_data, test_data = split_train_test2(train_data)
-
 
 
 # 更改SVD/SVDbias来选择模型

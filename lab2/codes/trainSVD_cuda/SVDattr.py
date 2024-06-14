@@ -90,11 +90,11 @@ def prepare_train_data(user_map, item_map, data, attr_map):
     return TensorDataset(users, items, ratings, item_attr1, item_attr2)
 
 
-def train(model, train_data, test_data,  num_epochs=20, lr=0.01, weight_decay=1e-6, batch_size=512, device='cuda'):
+def train(model, train_data, test_data,  num_epochs=20, lr=0.01, weight_decay=1e-6,batch_size=512, device='cuda',gamma=0.5):
     model.to(device)
     criterion = nn.MSELoss()
     optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = StepLR(optimizer, step_size=5, gamma=0.9)
+    scheduler = StepLR(optimizer, step_size=5, gamma=gamma)
 
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=12, pin_memory=True)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=12, pin_memory=True)

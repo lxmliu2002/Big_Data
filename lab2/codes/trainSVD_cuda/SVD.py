@@ -69,15 +69,14 @@ def prepare_train_data(user_map, item_map, data):
     ratings = torch.tensor([r for _, _, r in data], dtype=torch.float32)
     return TensorDataset(users, items, ratings)
 
-def prepare_test_data(user_map, item_map, data):
+def prepare_test_data(user_map, item_map, data, test =False):
     users = torch.tensor([user_map[u] for u, _ in data], dtype=torch.long)
     items = torch.tensor([item_map[i] for _, i in data], dtype=torch.long)
     
-    # 生成反向映射
+
     user_inverse_map = {v: k for k, v in user_map.items()}
     item_inverse_map = {v: k for k, v in item_map.items()}
     return TensorDataset(users, items), user_inverse_map, item_inverse_map
-
 
 def train(model, train_data, test_data, num_epochs=20, lr=0.01, weight_decay=1e-6, batch_size=512, device='cuda'):
     model.to(device)

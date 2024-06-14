@@ -4,6 +4,8 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+from sklearn.model_selection import train_test_split
+import math
 
 # 读取训练数据
 def read_train_data(filepath):
@@ -15,6 +17,18 @@ def read_train_data(filepath):
                 item_id, score = f.readline().strip().split()
                 train_data[int(user_id)].append((item_id, float(score)))
     return train_data
+
+# 划分训练集和测试集
+def split_train_test(train_data, test_size=0.1):
+    train_split = defaultdict(list)
+    test_split = defaultdict(list)
+
+    for user, ratings in train_data.items():
+        train_ratings, test_ratings = train_test_split(ratings, test_size=test_size)
+        train_split[user].extend(train_ratings)
+        test_split[user].extend(test_ratings)
+
+    return train_split, test_split
 
 # 读取项目数据
 def read_item_data(filepath):
@@ -46,7 +60,7 @@ def build_rating_matrix(train_data):
     rating_matrix = csr_matrix((data, (row, col)), shape=(len(users), len(items)))
     return rating_matrix, user_map, item_map
 
-# 假设rating_matrix是输入的用户-物品评分矩阵
+# 计算用户相似度
 def calculate_user_similarity(rating_matrix, batch_size=5000):
     num_users = rating_matrix.shape[0]
     similarity_matrix = np.zeros((num_users, num_users))
@@ -57,11 +71,6 @@ def calculate_user_similarity(rating_matrix, batch_size=5000):
         similarity_matrix[start:end] = batch_similarity
 
     return similarity_matrix
-
-# 保存模型
-def save_model(model, matrix, user_map, item_map, filepath):
-    with open(filepath, 'wb') as f:
-        pickle.dump((model, matrix, user_map, item_map), f)
 
 # 读取测试数据
 def read_test_data(filepath):
@@ -74,12 +83,6 @@ def read_test_data(filepath):
                 item_id = f.readline().strip()
                 test_data[int(user_id)].append(item_id)
     return test_data
-
-# 加载模型
-def load_model(filepath):
-    with open(filepath, 'rb') as f:
-        model, rating_matrix, user_map, item_map = pickle.load(f)
-    return model, rating_matrix, user_map, item_map
 
 # 进行用户评分预测
 def predict_user_ratings(similarity_matrix, rating_matrix, user_map, item_map, test_data, top_k=10):
@@ -95,7 +98,6 @@ def predict_user_ratings(similarity_matrix, rating_matrix, user_map, item_map, t
 
         for item in items:
             if item not in item_map:
-                predictions[user].append((item,0))
                 continue
             item_idx = item_map[item]
 
@@ -117,56 +119,62 @@ def predict_user_ratings(similarity_matrix, rating_matrix, user_map, item_map, t
 
     return predictions
 
+# 计算RMSE
+def calculate_rmse(predictions, test_split, user_map, item_map):
+    error_sum = 0
+    count = 0
+
+    for user, items in test_split.items():
+        if user not in user_map:
+            continue
+        user_idx = user_map[user]
+
+        for item, actual_score in items:
+            if item not in item_map:
+                continue
+            item_idx = item_map[item]
+
+            predicted_score = next((score for i, score in predictions[user] if i == item), 0)
+            error_sum += (predicted_score - actual_score) ** 2
+            count += 1
+
+    rmse = math.sqrt(error_sum / count) if count != 0 else 0
+    return rmse
+
 # 写入预测结果
 def write_predictions(predictions, filepath):
     with open(filepath, 'w') as f:
         for user, items in predictions.items():
-            f.write(f"{user}|{len(items)}\n")  # 根据实际预测数量写入
+            f.write(f"{user}|{len(items)}\n")
             for item, score in items:
                 f.write(f"{item} {score}\n")
 
-def main():
-    print("Starting training...")
+# 主流程
+print("Starting...")
 
-    # 训练数据文件路径
-    train_data_path = '../../data/train.txt'
-    item_data_path = '../../data/itemAttribute.txt'
+train_data_path = '../../data/train.txt'
+item_data_path = '../../data/itemAttribute.txt'
+test_data_path = '../../data/test.txt'
+result_path = '../result/result_userCF.txt'
+top_k = 500
 
-    # 读取和处理数据
-    train_data = read_train_data(train_data_path)
-    item_data = read_item_data(item_data_path)
+train_data = read_train_data(train_data_path)
+train_split, test_split = split_train_test(train_data, test_size=0.1)
 
-    # 构建评分矩阵
-    rating_matrix, user_map, item_map = build_rating_matrix(train_data)
+item_data = read_item_data(item_data_path)
+rating_matrix, user_map, item_map = build_rating_matrix(train_split)
+similarity_matrix = calculate_user_similarity(rating_matrix)
 
-    # 计算用户相似度矩阵
-    similarity_matrix = calculate_user_similarity(rating_matrix)
+print("Training Finished!")
 
-    # 保存模型
-    model_path = '../model/model_userCF.pkl'
-    save_model(similarity_matrix, rating_matrix, user_map, item_map, model_path)
+# 对test_split进行预测并计算RMSE
+split_predictions = predict_user_ratings(similarity_matrix, rating_matrix, user_map, item_map, test_split, top_k)
+rmse = calculate_rmse(split_predictions, test_split, user_map, item_map)
+print(f"RMSE: {rmse:.4f}")
 
-    print("Training finished!")
+# 对test.txt中的所有数据进行预测并写入文件
+test_data = read_test_data(test_data_path)
+final_predictions = predict_user_ratings(similarity_matrix, rating_matrix, user_map, item_map, test_data, top_k)
+write_predictions(final_predictions, result_path)
 
-    print("Starting testing...")
-
-    # 测试数据文件路径
-    test_data_path = '../../data/test.txt'
-    result_path = '../result/result_userCF.txt'
-
-    # 读取测试数据
-    test_data = read_test_data(test_data_path)
-
-    # 加载模型
-    model, rating_matrix, user_map, item_map = load_model(model_path)
-
-    # 进行预测
-    predictions = predict_user_ratings(model, rating_matrix, user_map, item_map, test_data, top_k=500)
-
-    # 写入预测结果
-    write_predictions(predictions, result_path)
-
-    print("Testing finished!")
-
-if __name__ == "__main__":
-    main()
+print("Finished!")

@@ -6,38 +6,19 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
-class SVDModel(nn.Module):
-    def __init__(self, num_users, num_items, latent_dim):
-        super(SVDModel, self).__init__()
-        self.user_factors = nn.Embedding(num_users, latent_dim)
-        self.item_factors = nn.Embedding(num_items, latent_dim)
-        self.user_bias = nn.Embedding(num_users, 1)  # 用户偏置
-        self.item_bias = nn.Embedding(num_items, 1)  # 物品偏置
-        self.global_bias = nn.Parameter(torch.zeros(1))  # 全局偏置
-        self.user_factors.weight.data.uniform_(0, 0.05)
-        self.item_factors.weight.data.uniform_(0, 0.05)
-        self.user_bias.weight.data.uniform_(0, 0.05)  # 初始化用户偏置
-        self.item_bias.weight.data.uniform_(0, 0.05)  # 初始化物品偏置
 
-    def forward(self, user_idx, item_idx):
-        user_factors = self.user_factors(user_idx)
-        item_factors = self.item_factors(item_idx)
-        user_bias = self.user_bias(user_idx).squeeze()
-        item_bias = self.item_bias(item_idx).squeeze()
-        dot = (user_factors * item_factors).sum(1)
-        return dot + user_bias + item_bias + self.global_bias
 
-    def save_model(self, epoch=0, save_dir='model/model_SVD.pt'):
-        if epoch != 0:
-            save_dir = f'model/model_SVD_{epoch}_epochs.pt'
-        torch.save(self.state_dict(), save_dir)
-        print(f'Model saved at {save_dir}\n')
 
-def prepare_data(user_map, item_map, data):
+def prepare_train_data(user_map, item_map, data):
     users = torch.tensor([user_map[u] for u, _, _ in data], dtype=torch.long)
     items = torch.tensor([item_map[i] for _, i, _ in data], dtype=torch.long)
     ratings = torch.tensor([r for _, _, r in data], dtype=torch.float32)
     return TensorDataset(users, items, ratings)
+
+def prepare_test_data(user_map, item_map, data):
+    users = torch.tensor([user_map[u] for u, _ in data], dtype=torch.long)
+    items = torch.tensor([item_map[i] for _, i in data], dtype=torch.long)
+    return TensorDataset(users, items)
 
 def train(model, train_data, test_data, num_epochs=20, lr=0.01, weight_decay=1e-6, batch_size=512, device='cuda'):
     model.to(device)

@@ -42,9 +42,6 @@ def read_and_split_train_data(filepath):
 
     return train_data, train_split, test_split
 
-
-
-
 # 读取项目数据
 def read_item_data(filepath):
     item_data = {}
@@ -188,8 +185,8 @@ def main():
     print("Starting training...")
 
     # 训练数据文件路径
-    train_data_path = '../../data/train.txt'
-    item_data_path = '../../data/itemAttribute.txt'
+    train_data_path = '../data/train.txt'
+    item_data_path = '../data/itemAttribute.txt'
 
     # 读取和处理数据
     train_data, train_split, val_data = read_and_split_train_data(train_data_path)
@@ -224,7 +221,7 @@ def main():
     print("Starting testing...")
 
     # 测试数据文件路径
-    test_data_path = '../../data/test.txt'
+    test_data_path = '../data/test.txt'
     result_path = '../result/result_userCF.txt'
 
     # 读取测试数据

@@ -11,7 +11,7 @@ def calculate_rmse(predictions, targets):
 
 
 # 文件路径
-file_path = '../result/validation_userCF.txt'
+file_path = './result/validation_userCF.txt'
 
 # 读取文件并计算RMSE
 predictions = []

@@ -76,9 +76,9 @@ latent_dim = 16
 num_epochs= 50
 lr= 0.01
 weight_decay=1e-4
-data_divide_method = 2
-gamma=0.5 #衰减率
-batch_size=512
+data_divide_method = 1
+gamma=0.2 #衰减率
+batch_size= 256
 device='cuda'  #可以改成cpu
 
 # 划分训练集和测试集

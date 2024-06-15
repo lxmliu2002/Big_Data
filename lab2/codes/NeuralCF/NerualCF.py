@@ -6,13 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import roc_auc_score
 from collections import defaultdict
 from tqdm import tqdm
-
-import torch
-import torch.nn as nn
 import torch.nn.functional as F
-
-import torch
-import torch.nn as nn
 
 class NeuMF(nn.Module):
     def __init__(self, num_users, num_items, num_attr1, num_attr2, gmf_dim = 64, mlp_dim = 128, layers_dim=[256,128,64,32]):
@@ -126,11 +120,23 @@ def prepare_train_data(user_map, item_map, data, attr_map):
     item_attr2 = torch.tensor([attr_map[item_map[i]][1] for _, i, _ in data], dtype=torch.long)
     return TensorDataset(users, items, ratings, item_attr1, item_attr2)
 
+def prepare_test_data(user_map, item_map, data, attr_map, test =False):
+    users = torch.tensor([user_map[u] for u, _ in data], dtype=torch.long)
+    items = torch.tensor([item_map[i] for _, i in data], dtype=torch.long)
+    # 获取物品属性列表
+    item_attr1 = torch.tensor([attr_map[item_map[i]][0] for _, i in data], dtype=torch.long)
+    item_attr2 = torch.tensor([attr_map[item_map[i]][1] for _, i in data], dtype=torch.long)
+
+    user_inverse_map = {v: k for k, v in user_map.items()}
+    item_inverse_map = {v: k for k, v in item_map.items()}
+    return TensorDataset(users, items, item_attr1, item_attr2), user_inverse_map, item_inverse_map
+
+
 def train(model, train_data, test_data,  num_epochs=20, lr=0.01, weight_decay=1e-6,batch_size=512, device='cuda',gamma=0.5):
     model.to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = StepLR(optimizer, step_size=2, gamma=0.5)
+    scheduler = StepLR(optimizer, step_size=2, gamma=0.2)
 
 
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=12, pin_memory=True)
@@ -197,24 +203,21 @@ def train(model, train_data, test_data,  num_epochs=20, lr=0.01, weight_decay=1e
 
         model.save_model(epoch + 1)
 
-def test(model, user_map, item_map, test_data, output_filepath, attr_map=None):
-
-    test_dataset, user_inverse_map, item_inverse_map = prepare_test_data(user_map, item_map, test_data)
+def test(model, user_map, item_map, test_data, output_filepath, attr_map=None, device='cuda'):
+    test_dataset, user_inverse_map, item_inverse_map = prepare_test_data(user_map, item_map, test_data,attr_map)
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False) 
 
     predictions = defaultdict(list)
-
+    model.to(device)
     # 将张量传递给模型进行预测
     with torch.no_grad():
-        for users, items_raw_id in test_loader:
+        for users, items_raw_id, attr1, attr2 in test_loader:
             users = users.to(device, non_blocking=True)
             items_raw_id = items_raw_id.to(device, non_blocking=True)
+            attr1 = attr1.to(device, non_blocking =True)
+            attr2 = attr2.to(device, non_blocking =True)
             
-            # 获取物品属性列表
-            item_attr1 = torch.tensor([attr_map[it][0] for it in items_raw_id]).to(device)
-            item_attr2 = torch.tensor([attr_map[it][1] for it in items_raw_id]).to(device)
-
-            preds = model(users, items_raw_id, item_attr1, item_attr2)
+            preds = model(users, items_raw_id, attr1, attr2)
             for i in range(len(users)):
                 user_id = user_inverse_map[users[i].item()]
                 item_id = item_inverse_map[items_raw_id[i].item()]

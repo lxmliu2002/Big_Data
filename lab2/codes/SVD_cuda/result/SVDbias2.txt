@@ -1,0 +1,139 @@
+Epoch 1/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 283.05batch/s]
+
+======Epoch 1/50======
+MSE Loss: 1127.7250708235522 AUC: 0.792539441725997 
+
+Model saved at model/SVDbias/model_SVD_1_epochs.pt
+
+Epoch 2/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 280.72batch/s]
+
+======Epoch 2/50======
+MSE Loss: 891.8035553693952 AUC: 0.8378871224107332 
+
+Model saved at model/SVDbias/model_SVD_2_epochs.pt
+
+Epoch 3/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 279.23batch/s]
+
+======Epoch 3/50======
+MSE Loss: 772.9065550773126 AUC: 0.8589280564795718 
+
+Model saved at model/SVDbias/model_SVD_3_epochs.pt
+
+Epoch 4/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 278.15batch/s]
+
+======Epoch 4/50======
+MSE Loss: 720.5944080873013 AUC: 0.865864991667272 
+
+Model saved at model/SVDbias/model_SVD_4_epochs.pt
+
+Epoch 5/50: 100%|████████████████████████████████████████████| 9730/9730 [00:35<00:00, 274.28batch/s]
+
+======Epoch 5/50======
+MSE Loss: 692.7661829108702 AUC: 0.8694664718195156 
+
+Model saved at model/SVDbias/model_SVD_5_epochs.pt
+
+Epoch 6/50: 100%|████████████████████████████████████████████| 9730/9730 [00:35<00:00, 277.14batch/s]
+
+======Epoch 6/50======
+MSE Loss: 678.2030095886277 AUC: 0.871961029930569 
+
+Model saved at model/SVDbias/model_SVD_6_epochs.pt
+
+Epoch 7/50: 100%|████████████████████████████████████████████| 9730/9730 [00:32<00:00, 297.17batch/s]
+
+======Epoch 7/50======
+MSE Loss: 661.5476472739703 AUC: 0.8751242731219253 
+
+Model saved at model/SVDbias/model_SVD_7_epochs.pt
+
+Epoch 8/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 283.89batch/s]
+
+======Epoch 8/50======
+MSE Loss: 646.070977812436 AUC: 0.8790820293028743 
+
+Model saved at model/SVDbias/model_SVD_8_epochs.pt
+
+Epoch 9/50: 100%|████████████████████████████████████████████| 9730/9730 [00:34<00:00, 285.77batch/s]
+
+======Epoch 9/50======
+MSE Loss: 630.9291351833781 AUC: 0.8827896811232993 
+
+Model saved at model/SVDbias/model_SVD_9_epochs.pt
+
+Epoch 10/50: 100%|███████████████████████████████████████████| 9730/9730 [00:35<00:00, 275.42batch/s]
+
+======Epoch 10/50======
+MSE Loss: 615.3379986850747 AUC: 0.8865628137957089 
+
+Model saved at model/SVDbias/model_SVD_10_epochs.pt
+
+Epoch 11/50: 100%|███████████████████████████████████████████| 9730/9730 [00:33<00:00, 290.14batch/s]
+
+======Epoch 11/50======
+MSE Loss: 603.0941905701284 AUC: 0.8893482536455202 
+
+Model saved at model/SVDbias/model_SVD_11_epochs.pt
+
+Epoch 12/50: 100%|███████████████████████████████████████████| 9730/9730 [00:32<00:00, 295.93batch/s]
+
+======Epoch 12/50======
+MSE Loss: 592.1319753013632 AUC: 0.8918191137341805 
+
+Model saved at model/SVDbias/model_SVD_12_epochs.pt
+
+Epoch 13/50: 100%|███████████████████████████████████████████| 9730/9730 [00:33<00:00, 291.01batch/s]
+
+======Epoch 13/50======
+MSE Loss: 582.2193103910485 AUC: 0.893899039686084 
+
+Model saved at model/SVDbias/model_SVD_13_epochs.pt
+
+Epoch 14/50: 100%|███████████████████████████████████████████| 9730/9730 [00:33<00:00, 290.87batch/s]
+
+======Epoch 14/50======
+MSE Loss: 575.6094423032991 AUC: 0.8956111169307435 
+
+Model saved at model/SVDbias/model_SVD_14_epochs.pt
+
+Epoch 15/50: 100%|███████████████████████████████████████████| 9730/9730 [00:33<00:00, 287.85batch/s]
+
+======Epoch 15/50======
+MSE Loss: 564.4598397010936 AUC: 0.8972365588932012 
+
+Model saved at model/SVDbias/model_SVD_15_epochs.pt
+
+Epoch 16/50: 100%|███████████████████████████████████████████| 9730/9730 [00:32<00:00, 295.08batch/s]
+
+======Epoch 16/50======
+MSE Loss: 558.9942800657918 AUC: 0.8986943035547408 
+
+Model saved at model/SVDbias/model_SVD_16_epochs.pt
+
+Epoch 17/50: 100%|███████████████████████████████████████████| 9730/9730 [00:35<00:00, 274.47batch/s]
+
+======Epoch 17/50======
+MSE Loss: 551.4941731688776 AUC: 0.8996779412788175 
+
+Model saved at model/SVDbias/model_SVD_17_epochs.pt
+
+Epoch 18/50: 100%|███████████████████████████████████████████| 9730/9730 [00:35<00:00, 275.25batch/s]
+
+======Epoch 18/50======
+MSE Loss: 547.1081540937835 AUC: 0.9005492747472941 
+
+Model saved at model/SVDbias/model_SVD_18_epochs.pt
+
+Epoch 19/50: 100%|███████████████████████████████████████████| 9730/9730 [00:33<00:00, 291.18batch/s]
+
+======Epoch 19/50======
+MSE Loss: 542.0575643129303 AUC: 0.9013375020012477 
+
+Model saved at model/SVDbias/model_SVD_19_epochs.pt
+
+Epoch 20/50: 100%|███████████████████████████████████████████| 9730/9730 [00:32<00:00, 300.53batch/s]
+
+======Epoch 20/50======
+MSE Loss: 537.5944100289793 AUC: 0.9020716346404442 
+
+Model saved at model/SVDbias/model_SVD_20_epochs.pt

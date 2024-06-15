@@ -1,0 +1,44 @@
+Epoch 1/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:42<00:00, 86.06batch/s]
+
+======Epoch 1/50======
+MSE Loss: 706.4951978164704 AUC: 0.8782736904941982 
+
+Model saved at model/NeuMF/model_NeuMF_1_epochs.pt
+
+Epoch 2/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:42<00:00, 85.93batch/s]
+
+======Epoch 2/50======
+MSE Loss: 637.5769151421105 AUC: 0.8914542653639739 
+
+Model saved at model/NeuMF/model_NeuMF_2_epochs.pt
+
+Epoch 3/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:41<00:00, 86.71batch/s]
+
+======Epoch 3/50======
+MSE Loss: 576.3431446259382 AUC: 0.905084094659491 
+
+Model saved at model/NeuMF/model_NeuMF_3_epochs.pt
+
+Epoch 4/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:41<00:00, 86.68batch/s]
+
+======Epoch 4/50======
+MSE Loss: 582.4194541673708 AUC: 0.9011391638952477 
+
+Model saved at model/NeuMF/model_NeuMF_4_epochs.pt
+
+Epoch 5/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:41<00:00, 86.77batch/s]
+
+======Epoch 5/50======
+MSE Loss: 591.3587775029539 AUC: 0.897330919837393 
+
+Model saved at model/NeuMF/model_NeuMF_5_epochs.pt
+
+Epoch 6/50: 100%|█████████████████████████████████████████████| 8792/8792 [01:41<00:00, 86.49batch/s]
+
+======Epoch 6/50======
+MSE Loss: 607.5791621032987 AUC: 0.8911536571454701 
+
+Model saved at model/NeuMF/model_NeuMF_6_epochs.pt
+
+Early stopping at epoch 6
+Model saved at model/NeuMF/model_NeuMF.pt

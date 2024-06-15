@@ -41,12 +41,12 @@ def main(filepath):
     total_attributes, avg_occurrences, min_occurrences, max_occurrences = analyze_attributes(attribute_count)
     
     # 输出结果
-    print(f"总共出现 {total_attributes} 个属性类型")
-    print(f"平均每个属性出现 {avg_occurrences:.2f} 次")
-    print(f"最少出现的属性类型出现了 {min_occurrences} 次")
-    print(f"最多出现的属性类型出现了 {max_occurrences} 次")
+    print(f"There are a total of {total_attributes} attribute types")
+    print(f"On average, each attribute appears {avg_occurrences:.2f} times")
+    print(f"The least frequent attribute type appeared {min_occurrences} times")
+    print(f"The most frequent attribute type appeared {max_occurrences} times")
 
-# 示例用法
+
 if __name__ == "__main__":
     filepath = "../data/itemAttribute.txt"
     main(filepath)

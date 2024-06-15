@@ -107,6 +107,12 @@ def write_predictions(predictions, filepath):
                 f.write(f"{item} {score}\n")
 
 
+def calculate_rmse(predictions, train_data):
+    mse = np.mean([(train_data[user][item] - score)**2 
+                    for user, items in predictions.items() 
+                    for item, score in items if item in train_data[user]])
+    return np.sqrt(mse)
+
 print("starting...")
 
 # 主流程
@@ -120,5 +126,8 @@ rating_matrix, user_map, item_map = build_rating_matrix(train_data)
 predict_matrix = predict_ratings(test_data, train_data, rating_matrix, user_map, item_map)
 
 write_predictions(predict_matrix, './result/result_itemCF.txt')
+
+rmse = calculate_rmse(predict_matrix, train_data)
+print(f"RMSE: {rmse:.4f}")
 
 print("finished!")

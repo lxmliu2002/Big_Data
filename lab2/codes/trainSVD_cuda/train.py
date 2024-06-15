@@ -78,7 +78,7 @@ lr=0.05
 weight_decay=1e-6
 model_type = "SVDattr"
 data_divide_method = 1
-gamma=0.5 #衰减率
+gamma=0.75 #衰减率
 batch_size=512
 device='cuda'  #可以改成cpu
 

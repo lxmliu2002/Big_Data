@@ -34,13 +34,12 @@ def analyze_attributes(attribute_count):
     max_occurrences = max(attribute_count.values(), default=0)
     return total_attributes, avg_occurrences, min_occurrences, max_occurrences
 
-# 主函数，读取数据并进行统计分析
+
 def main(filepath):
     data = read_attribute_data(filepath)
     attribute_count = count_attributes(data)
     total_attributes, avg_occurrences, min_occurrences, max_occurrences = analyze_attributes(attribute_count)
     
-    # 输出结果
     print(f"There are a total of {total_attributes} attribute types")
     print(f"On average, each attribute appears {avg_occurrences:.2f} times")
     print(f"The least frequent attribute type appeared {min_occurrences} times")

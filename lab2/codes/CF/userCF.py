@@ -222,7 +222,7 @@ def main():
 
     # 测试数据文件路径
     test_data_path = '../data/test.txt'
-    result_path = '../result/result_userCF.txt'
+    result_path = './result/result_userCF.txt'
 
     # 读取测试数据
     test_data = read_test_data(test_data_path)

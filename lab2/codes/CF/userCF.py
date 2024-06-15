@@ -199,7 +199,7 @@ def main():
     similarity_matrix = calculate_user_similarity(rating_matrix)
 
     # 保存模型
-    model_path = '../model/model_userCF.pkl'
+    model_path = './model/model_userCF.pkl'
     save_model(similarity_matrix, rating_matrix, user_map, item_map, model_path)
 
     print("Training finished!")
@@ -213,7 +213,7 @@ def main():
 
     # 验证集预测并评估模型性能
     predictions = predict_user_ratings(model, rating_matrix, user_map, item_map, val_data, top_k=500)
-    val_result_path = '../result/validation_userCF.txt'
+    val_result_path = './result/validation_userCF.txt'
     write_validation_predictions(predictions, val_real, val_result_path)
 
     print("Validation finished!")

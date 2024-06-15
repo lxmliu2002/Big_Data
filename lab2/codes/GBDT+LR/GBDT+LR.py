@@ -108,11 +108,11 @@ if __name__ == "__main__":
     
     # 拆分训练数据和测试数据
     train_data, test_data = data_process.split_train_test(train_data, train_ratio=0.9)
-    target_data = read_test_data('../data/test.txt')
+    target_data = data_process.read_test_data('../data/test.txt')
 
     # 读取物品属性
     item_attributes = data_analysis.read_attribute_data("../data/itemAttribute.txt")
-    
+
     # 准备并训练 GBDT+LR 模型
     X_train, y_train = prepare_gbdt_lr_data(user_map, item_map, train_data, item_attributes)
     gbdt_model, lr_model = train_gbdt_lr(X_train, y_train)
